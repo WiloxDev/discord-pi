@@ -9,11 +9,12 @@ Guía oficial para usuarios y desarrolladores sobre cómo instalar, configurar, 
 1. [¿Qué es Discord-PI?](#1-qué-es-discord-pi)
 2. [Arquitectura y Cómo Funciona](#2-arquitectura-y-cómo-funciona)
 3. [Instalación Rápida](#3-instalación-rápida)
-4. [Casos de Uso Reales](#4-casos-de-uso-reales)
-5. [Comandos y Uso Diario](#5-comandos-y-uso-diario)
-6. [Configuración Personalizada (`~/.discord-pirc.json`)](#6-configuración-personalizada)
-7. [Integración para Desarrolladores y Bots](#7-integración-para-desarrolladores-y-bots)
-8. [Resolución de Problemas (Troubleshooting)](#8-resolución-de-problemas-troubleshooting)
+4. [Vinculación de tu Cuenta de Discord](#4-vinculación-de-tu-cuenta-de-discord)
+5. [Casos de Uso Reales](#5-casos-de-uso-reales)
+6. [Comandos y Uso Diario](#6-comandos-y-uso-diario)
+7. [Configuración Personalizada (`~/.discord-pirc.json`)](#7-configuración-personalizada)
+8. [Integración para Desarrolladores y Bots](#8-integración-para-desarrolladores-y-bots)
+9. [Resolución de Problemas (Troubleshooting)](#9-resolución-de-problemas-troubleshooting)
 
 ---
 
@@ -89,7 +90,65 @@ Al abrir una nueva sesión de Gentle-Pi (`pi`), la extensión se cargará de for
 
 ---
 
-## 4. Casos de Uso Reales
+## 4. Vinculación de tu Cuenta de Discord
+
+Para que la tarjeta identifique exactamente qué usuario eres tú, distinga tu micrófono (`isSelf`) y te coloque siempre en la cabecera interactiva, existen tres formas de vinculación según tu entorno:
+
+### Método A: Vinculación Rápida por Nick/ID (Recomendada y más fácil)
+
+Este método no requiere crear bots ni configurar tokens complejos:
+
+1. **Obtén tu Discord User ID**:
+   - En tu cliente de Discord, ve a **Ajustes de Usuario (⚙️)** > **Avanzado**.
+   - Activa el interruptor **"Modo Desarrollador"**.
+   - Haz clic derecho sobre tu propio avatar/nombre (en cualquier canal o en la lista de amigos) y selecciona **"Copiar ID de usuario"**.
+2. **Configura tu archivo `~/.discord-pirc.json`**:
+   Abre o crea el archivo `~/.discord-pirc.json` y coloca tu nombre o ID:
+   ```json
+   {
+     "defaultUsername": "TuNombreEnDiscord",
+     "defaultUserId": "1532522904032514197"
+   }
+   ```
+3. ¡Listo! Cada vez que estés en un canal de voz, `discord-pi` sabrá que eres tú y priorizará tu estado de micrófono.
+
+---
+
+### Método B: Vinculación Oficial mediante Discord RPC (App de Desarrollador)
+
+Si deseas sincronización bidireccional automática mediante los sockets IPC locales de Discord Desktop (`/run/user/1000/discord-ipc-0` o Named Pipe):
+
+1. **Crear una Aplicación en Discord**:
+   - Entra en [Discord Developer Portal](https://discord.com/developers/applications).
+   - Haz clic en **"New Application"** y dale de nombre `Gentle-Pi` o `Discord-PI`.
+   - Ve a la pestaña **OAuth2** y copia tu **Client ID** (Application ID).
+2. **Habilitar Scopes de Voz y Actividad**:
+   - En la sección **OAuth2** > **URL Generator**, marca las casillas:
+     - `rpc` (acceso a la API RPC local).
+     - `rpc.voice.read` (lectura de estado de voz y participantes).
+     - `rpc.activities.write` (actualizar estado / rich presence si lo deseas).
+3. **Guardar en tu Configuración**:
+   Añade el `clientId` en tu archivo `~/.discord-pirc.json`:
+   ```json
+   {
+     "clientId": "TU_APPLICATION_CLIENT_ID"
+   }
+   ```
+4. Al abrir Discord Desktop y arrancar Gentle-Pi, Discord mostrará una ventana emergente: **"¿Autorizar a Gentle-Pi para acceder a tu Discord?"**. Pulsa **Autorizar**. A partir de ese momento, la vinculación es 100% nativa.
+
+---
+
+### Método C: Vinculación mediante Bot de Servidor (Para Teams / Canales Grupales)
+
+Si estás en un servidor comunitario o de empresa y quieres que un bot reporte el estado de la sala:
+
+1. Crea un Bot en el Developer Portal y obtén el `BOT_TOKEN`.
+2. Otorga al bot el permiso de **Voice State Intent** (`GUILD_VOICE_STATES`).
+3. El bot puede reportar el estado de los miembros directamente al archivo puente `~/.discord-voice-state.json`.
+
+---
+
+## 5. Casos de Uso Reales
 
 ### Caso de Uso 1: Pair Programming y Sesiones de Debugging
 - **Escenario**: Estás programando en Gentle-Pi junto a un colega o equipo en un canal de voz de Discord.
@@ -106,7 +165,7 @@ Al abrir una nueva sesión de Gentle-Pi (`pi`), la extensión se cargará de for
 
 ---
 
-## 5. Comandos y Uso Diario
+## 6. Comandos y Uso Diario
 
 En el prompt interactivo de Pi puedes escribir los siguientes comandos:
 
@@ -118,7 +177,7 @@ En el prompt interactivo de Pi puedes escribir los siguientes comandos:
 
 ---
 
-## 6. Configuración Personalizada
+## 7. Configuración Personalizada
 
 Puedes editar el archivo `~/.discord-pirc.json` (o `.discord-pi.json` en la raíz de tu proyecto):
 
@@ -144,7 +203,7 @@ Puedes editar el archivo `~/.discord-pirc.json` (o `.discord-pi.json` en la raí
 
 ---
 
-## 7. Integración para Desarrolladores y Bots
+## 8. Integración para Desarrolladores y Bots
 
 Si tienes un bot, script en Python o daemon local que monitoree Discord, puedes alimentar a `discord-pi` simplemente escribiendo un JSON en `~/.discord-voice-state.json`.
 
@@ -179,7 +238,7 @@ Si tienes un bot, script en Python o daemon local que monitoree Discord, puedes 
 
 ---
 
-## 8. Resolución de Problemas (Troubleshooting)
+## 9. Resolución de Problemas (Troubleshooting)
 
 ### La tarjeta dice `• Desconectado`
 - Verifica que el archivo de estado esté presente o que Discord esté en un canal de voz activo.
