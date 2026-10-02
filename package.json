@@ -1,0 +1,39 @@
+{
+  "name": "discord-pi",
+  "version": "1.0.0",
+  "description": "Discord Voice Operations Card y widget interactivo para el sidebar de Gentle-Pi",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "pi-extension",
+    "gentle-pi",
+    "discord",
+    "voice",
+    "sidebar-widget"
+  ],
+  "author": "WiloxDev (wilsonlavio9@gmail.com)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WiloxDev/discord-pi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/WiloxDev/discord-pi/issues"
+  },
+  "homepage": "https://github.com/WiloxDev/discord-pi#readme",
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "typescript": "^5.9.3"
+  },
+  "pi": {
+    "extensions": [
+      "dist/index.js"
+    ]
+  }
+}

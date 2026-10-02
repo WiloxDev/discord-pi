@@ -1,0 +1,247 @@
+{
+  "version": 1,
+  "app_open": true,
+  "confirmed": true,
+  "state": "muted",
+  "channel": "🏨 Cafe Hotel Mustachi",
+  "participants": 22,
+  "streams": 0,
+  "streams_known": true,
+  "updated_at_ms": 1789596705824,
+  "error": null,
+  "ping_ms": 30,
+  "bitrate_kbps": 64,
+  "user_limit": null,
+  "self": {
+    "userId": "1532522904032514197",
+    "displayName": "Wilson Lavio",
+    "muted": true,
+    "deafened": false,
+    "inputVolume": 43,
+    "outputVolume": 94,
+    "inputMode": "VOICE_ACTIVITY"
+  },
+  "voice_states": [
+    {
+      "userId": "197722887254179841",
+      "username": "matecocidoche",
+      "displayName": "M@t3 Co$ido",
+      "nick": "M@t3 Co$ido",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "419320260852711426",
+      "username": "j0mendo",
+      "displayName": "J0mendo-Dev",
+      "nick": "J0mendo-Dev",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "434942510796898314",
+      "username": "gonzalonicolasr",
+      "displayName": "GonzaloR",
+      "nick": "GonzaloR",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "476836078339489805",
+      "username": "cinlo",
+      "displayName": "CinLo💜",
+      "nick": "CinLo💜",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "512260009758031893",
+      "username": "mettapana",
+      "displayName": "mettapana",
+      "nick": "mettapana",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "683378050498560077",
+      "username": "simsoncult8426",
+      "displayName": "J0k3r-dev-grl",
+      "nick": "J0k3r-dev-grl",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "710518599886045304",
+      "username": "kennbroorg",
+      "displayName": "KennBro",
+      "nick": "KennBro",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "755261507297607720",
+      "username": "bojack7080",
+      "displayName": "bojack7080",
+      "nick": "bojack7080",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "817220602955038730",
+      "username": "cruzandofronteras",
+      "displayName": "willycruz",
+      "nick": "willycruz",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "836415382730178560",
+      "username": "alex_xd8",
+      "displayName": "Alex",
+      "nick": "Alex",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "843262602888085536",
+      "username": ".davidcoachdev",
+      "displayName": "David H. Caycedo Blum",
+      "nick": "Dc Dev",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "1151847944350334976",
+      "username": "ricardo.rod",
+      "displayName": "Ricardo Rodriguez",
+      "nick": "Ricardo Rodriguez",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "1205731184131309629",
+      "username": "douglas292",
+      "displayName": "dam",
+      "nick": "dam",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "1304757354864181302",
+      "username": "antifanwarrior",
+      "displayName": "Karü",
+      "nick": "Karü",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "1440464754618405006",
+      "username": "yei_alex_vazquez",
+      "displayName": "Nox",
+      "nick": "Nox",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "1513643947816386590",
+      "username": "fiery_lemur_53546",
+      "displayName": "gc",
+      "nick": "gc",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "711774109461250060",
+      "username": "batmad.",
+      "displayName": "batmad",
+      "nick": "batmad",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "468970967620780032",
+      "username": "rawrcode",
+      "displayName": "RawrCode",
+      "nick": "RawrCode",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "483277594138247189",
+      "username": "ramonsdk",
+      "displayName": "RamonsDk-Dev",
+      "nick": "RamonsDk-Dev",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "1532522904032514197",
+      "username": "wilofox_12589",
+      "displayName": "Wilox",
+      "nick": "Wilox",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": true
+    },
+    {
+      "userId": "694716922092191754",
+      "username": "s_bergmann",
+      "displayName": "S_Bergman",
+      "nick": "Seba_B (ClowRaider)",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    },
+    {
+      "userId": "650123943738343425",
+      "username": "user988909850948",
+      "displayName": "Lomito Italiano",
+      "nick": "Lomito Italiano",
+      "muted": false,
+      "deafened": false,
+      "speaking": false,
+      "isSelf": false
+    }
+  ],
+  "speaking_user_ids": []
+}

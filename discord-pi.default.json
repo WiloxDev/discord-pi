@@ -1,0 +1,11 @@
+{
+  "enabled": true,
+  "defaultUsername": "Wilson Lavio",
+  "participantPreview": 3,
+  "showSpeaking": true,
+  "showBitrate": true,
+  "showPing": true,
+  "showAudioWhenIdle": true,
+  "pollIntervalMs": 1500,
+  "customStatePath": null
+}
