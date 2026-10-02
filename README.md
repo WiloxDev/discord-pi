@@ -68,3 +68,10 @@ Puedes interactuar con Discord mediante el comando `/discord`:
 ## 📄 Licencia
 
 MIT © [WiloxDev](https://github.com/WiloxDev)
+
+---
+
+## 📚 Documentación Completa
+
+Para ver el manual completo con arquitectura, integración para desarrolladores, diagramas y casos de uso detallados, consulta [MANUAL.md](./MANUAL.md).
+
