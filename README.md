@@ -16,7 +16,18 @@ Card reactiva e interactiva de Discord Voice para el sidebar de **Gentle-Pi / Pi
 
 ## 🚀 Instalación Rápida (Cliente)
 
-Para instalarlo de forma automática en tu entorno Gentle-Pi:
+### 🤖 Para Agentes AI (Copiar y Pegar)
+Si estás usando un agente AI (Pi, Claude, Cursor), indícale:
+```text
+Instala y activa la extensión de Discord en mi Gentle-Pi ejecutando su instalador oficial:
+curl -sSL https://raw.githubusercontent.com/WiloxDev/discord-pi/main/install.sh | bash
+Verifica que dist/index.js se haya creado y avísame al terminar.
+```
+
+---
+
+### En tu Terminal
+Para instalarlo de forma manual o automática:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/WiloxDev/discord-pi/main/install.sh | bash

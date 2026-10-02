@@ -66,7 +66,18 @@ Guía oficial para usuarios y desarrolladores sobre cómo instalar, configurar, 
 
 ## 3. Instalación Rápida
 
-### Opción A: Instalación Automática (Recomendada)
+### 🤖 Prompt Rápido para Agentes AI (Copiar y Pegar)
+Si estás usando un agente AI (Pi, Claude, Cursor, Codex), dale este prompt directo:
+
+```text
+Instala y activa la extensión de Discord en mi Gentle-Pi ejecutando su instalador oficial:
+curl -sSL https://raw.githubusercontent.com/WiloxDev/discord-pi/main/install.sh | bash
+Verifica que dist/index.js se haya creado y avísame al terminar.
+```
+
+---
+
+### Opción A: Instalación Automática (Recomendada en Terminal)
 Ejecuta este comando en tu terminal Linux/macOS:
 
 ```bash
