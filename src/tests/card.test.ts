@@ -44,13 +44,15 @@ test("renderDiscordCard shows ready state with Vesktop badge", () => {
     clientType: "vesktop",
     pingMs: null,
     channel: null,
-    self: { displayName: "Wilson Lavio", muted: false, deafened: false, inputVolume: null, outputVolume: null, inputMode: null },
+    self: { displayName: "Athrazur", muted: false, deafened: false, inputVolume: null, outputVolume: null, inputMode: null },
     participants: [],
     speakingCount: 0,
   };
 
   const lines = renderDiscordCard(proj, 60, baseConfig);
-  assert.ok(lines.some((l) => l.includes("Listo [Vesktop]")));
+  assert.ok(lines.length >= 5); // Tarjeta completa enriquecida
+  assert.ok(lines.some((l) => l.includes("App Lista")));
+  assert.ok(lines.some((l) => l.includes("Athrazur")));
   assert.ok(lines[0].includes("Discord Voice (Vesktop)"));
 });
 
@@ -61,13 +63,15 @@ test("renderDiscordCard shows ready state with Discord Oficial badge", () => {
     clientType: "discord_official",
     pingMs: null,
     channel: null,
-    self: { displayName: "Wilson Lavio", muted: false, deafened: false, inputVolume: null, outputVolume: null, inputMode: null },
+    self: { displayName: "Athrazur", muted: false, deafened: false, inputVolume: null, outputVolume: null, inputMode: null },
     participants: [],
     speakingCount: 0,
   };
 
   const lines = renderDiscordCard(proj, 60, baseConfig);
-  assert.ok(lines.some((l) => l.includes("Listo [Oficial]")));
+  assert.ok(lines.length >= 5); // Tarjeta completa enriquecida
+  assert.ok(lines.some((l) => l.includes("App Lista")));
+  assert.ok(lines.some((l) => l.includes("Athrazur")));
   assert.ok(lines[0].includes("Discord Voice (Oficial)"));
 });
 

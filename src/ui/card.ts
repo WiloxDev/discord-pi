@@ -47,21 +47,61 @@ export function renderDiscordCard(
         : "Discord Voice";
 
   if (!proj.connected && !proj.channel) {
-    const clientBadge =
-      proj.clientType === "vesktop"
-        ? " [Vesktop]"
-        : proj.clientType === "discord_official"
-          ? " [Oficial]"
-          : "";
+    // Si Discord está abierto y listo por IPC (aunque no tengamos telemetría de sala privada),
+    // renderizamos el panel enriquecido con el usuario, mute y atajos, en lugar de 1 sola línea.
+    if (proj.connectionState === "ready") {
+      const lines: string[] = [];
+      const clientLabel =
+        proj.clientType === "vesktop"
+          ? "Vesktop (arRPC)"
+          : proj.clientType === "discord_official"
+            ? "Discord Oficial"
+            : "Discord Conectado";
 
-    const statusLabel =
-      proj.connectionState === "ready"
-        ? color("mint", `• Listo${clientBadge}`)
-        : color("coral", "• Desconectado");
+      // Línea 1: Estado y cliente detectado
+      lines.push(
+        padBetween(
+          `${color("mint", "●")} ${color("white", "App Lista")}`,
+          color("muted", `[ ${clientLabel} ]`),
+          innerWidth,
+        ),
+      );
 
+      // Línea 2: Usuario y estado de micrófono
+      const selfName = proj.self.displayName || config.defaultUsername;
+      const muteBadge = proj.self.muted
+        ? color("coral", "[ 🔇 Mute ]")
+        : color("mint", "[ 🎙 Mic Activo ]");
+
+      lines.push(
+        padBetween(
+          `${color("mint", "🎙")} ${color("white", fitText(selfName, 18))}`,
+          muteBadge,
+          innerWidth,
+        ),
+      );
+
+      // Línea 3: Guía de canal y ayuda rápida
+      const actionText =
+        proj.clientType === "vesktop"
+          ? "Atajo: Clave global"
+          : "Clic: Alternar Mute";
+
+      lines.push(
+        padBetween(
+          `${color("muted", "⚡")} ${color("muted", "En espera de voz")}`,
+          color("muted", `[ ${actionText} ]`),
+          innerWidth,
+        ),
+      );
+
+      return renderClosedCard(cardTitle, "🎧", lines, effectiveWidth);
+    }
+
+    // Estado desconectado total (Discord cerrado o sin socket)
     const line = padBetween(
-      `${color("muted", "Estado")} ${statusLabel}`,
-      color("muted", "[ ↗ Abrir ]"),
+      `${color("muted", "Estado")} ${color("coral", "• Desconectado")}`,
+      color("muted", "[ ↗ Abrir Discord ]"),
       innerWidth,
     );
     return renderClosedCard(cardTitle, "🎧", [line], effectiveWidth);
