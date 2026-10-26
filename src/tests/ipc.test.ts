@@ -5,8 +5,9 @@ import {
   decodeIpcPacket,
   IpcOpcode,
   getIpcCandidatePaths,
+  DiscordIpcConnection,
 } from "../core/discord-ipc.js";
-import { getStateCandidatePaths } from "../core/ipc.js";
+import { getStateCandidatePaths, DiscordClient } from "../core/ipc.js";
 
 test("encodeIpcPacket and decodeIpcPacket roundtrip correctly", () => {
   const payload = { cmd: "DISPATCH", evt: "READY", data: { v: 1 } };
@@ -58,4 +59,34 @@ test("getStateCandidatePaths includes expected user paths", () => {
   assert.ok(paths.length >= 2);
   assert.ok(paths.some((p) => p.includes(".discord-voice-state.json")));
   assert.ok(paths.some((p) => p.includes("sample-status.json")));
+});
+
+test("DiscordIpcConnection handles error event without unhandled crash", () => {
+  const ipc = new DiscordIpcConnection();
+  // Emitting error should not throw due to default passive handler
+  assert.doesNotThrow(() => {
+    ipc.emit("error", new Error("EPIPE simulated test error"));
+  });
+  ipc.cleanup();
+});
+
+test("DiscordClient initializes lazily without immediate IPC connection", () => {
+  const client = new DiscordClient({
+    enabled: true,
+    defaultUsername: "Test",
+    defaultUserId: "123",
+    participantPreview: 3,
+    showSpeaking: true,
+    showBitrate: true,
+    showPing: true,
+    showAudioWhenIdle: true,
+    pollIntervalMs: 1500,
+    customStatePath: null,
+    clientId: "",
+    maxWidth: 54,
+  });
+
+  // Client should not be connected immediately on instantiation
+  assert.strictEqual(client.getIpc().isConnected(), false);
+  client.dispose();
 });

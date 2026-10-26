@@ -113,6 +113,8 @@ export class DiscordIpcConnection extends EventEmitter {
 
   constructor(private clientId: string = "1290372891901239328") {
     super();
+    // Manejador pasivo para evitar excepciones no capturadas de EventEmitter en Node.js
+    this.on("error", () => {});
   }
 
   public isConnected(): boolean {
@@ -150,12 +152,20 @@ export class DiscordIpcConnection extends EventEmitter {
 
   private tryConnectPath(targetPath: string): Promise<boolean> {
     return new Promise((resolve) => {
-      const socket = net.connect(targetPath);
       let established = false;
+      let socket: net.Socket;
+
+      try {
+        socket = net.connect(targetPath);
+      } catch {
+        return resolve(false);
+      }
 
       const timeout = setTimeout(() => {
         if (!established) {
-          socket.destroy();
+          try {
+            socket.destroy();
+          } catch {}
           resolve(false);
         }
       }, 1500);
@@ -167,14 +177,21 @@ export class DiscordIpcConnection extends EventEmitter {
         this.connected = true;
         this.setupSocketEvents(socket);
 
-        // Send initial Handshake
-        this.sendHandshake(this.clientId);
-        resolve(true);
+        // Envío seguro de Handshake inicial
+        try {
+          this.sendHandshake(this.clientId);
+          resolve(true);
+        } catch {
+          this.cleanup();
+          resolve(false);
+        }
       });
 
       socket.once("error", () => {
         clearTimeout(timeout);
-        socket.destroy();
+        try {
+          socket.destroy();
+        } catch {}
         resolve(false);
       });
     });
@@ -280,7 +297,25 @@ export class DiscordIpcConnection extends EventEmitter {
         },
       });
 
-      this.socket?.write(packet);
+      try {
+        this.socket?.write(packet, (err) => {
+          if (err) {
+            if (this.pendingCommands.has(nonce)) {
+              this.pendingCommands.delete(nonce);
+              clearTimeout(timeout);
+              reject(err);
+            }
+            this.cleanup();
+          }
+        });
+      } catch (err: any) {
+        if (this.pendingCommands.has(nonce)) {
+          this.pendingCommands.delete(nonce);
+          clearTimeout(timeout);
+          reject(err);
+        }
+        this.cleanup();
+      }
     });
   }
 
@@ -311,8 +346,16 @@ export class DiscordIpcConnection extends EventEmitter {
 
   private sendRaw(opcode: IpcOpcode, payload: Record<string, any>): void {
     if (this.socket && !this.socket.destroyed) {
-      const packet = encodeIpcPacket(opcode, payload);
-      this.socket.write(packet);
+      try {
+        const packet = encodeIpcPacket(opcode, payload);
+        this.socket.write(packet, (err) => {
+          if (err) {
+            this.cleanup();
+          }
+        });
+      } catch {
+        this.cleanup();
+      }
     }
   }
 

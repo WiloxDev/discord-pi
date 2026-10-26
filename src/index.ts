@@ -44,10 +44,50 @@ export default function activate(pi: any) {
       return;
     }
 
+    // Conexión lazy: solo se intenta cuando hay una sesión interactiva iniciada
+    void client.tryConnectIpc();
+
     try {
-      ctx.ui.setWidget("discord", (_tui: any, _theme: any) => {
+      ctx.ui.setWidget("discord", (tui: any, _theme: any) => {
+        // Enlace al estado del sidebar de Gentle-Shell si está presente
+        const SIDEBAR_STATE_KEY = Symbol.for("gentle-pi.experimental-sidebar.state");
+        const terminalState = tui?.terminal ? (tui.terminal as any)[SIDEBAR_STATE_KEY] : null;
+
+        const railComponent = {
+          render: (railWidth: number) => {
+            const proj = client.getProjection();
+            return renderDiscordCard(proj, railWidth, config);
+          },
+          handleMouse: (evt: any) => {
+            if (evt?.type === "click") {
+              void client.toggleMute().then((res) => {
+                const msg = res.message || "Estado de micrófono alternado";
+                ctx.ui?.notify?.(`🎙 ${msg}`);
+              });
+              return true;
+            }
+            return false;
+          },
+          digest: () => {
+            const proj = client.getProjection();
+            return `${proj.connectionState}_${proj.clientType}_${proj.channel?.name}_${proj.self.muted}_${proj.participants.length}_${client.getIpc().isConnected()}`;
+          },
+          invalidate: () => {},
+          dispose: () => {},
+        };
+
+        // Si Gentle-Shell tiene el mapa de partes del sidebar, registramos discord
+        if (terminalState?.parts && typeof terminalState.parts.set === "function") {
+          terminalState.parts.set("discord", railComponent);
+        }
+
         return {
           render: (width: number) => {
+            // Supresión inteligente: si el sidebar de Gentle-Shell está activo y posee el host (>= 140 cols),
+            // suprimimos la tarjeta sobre el editor para evitar duplicación visual.
+            if (terminalState?.active && terminalState?.ownsHost?.()) {
+              return [];
+            }
             const proj = client.getProjection();
             return renderDiscordCard(proj, width, config);
           },
@@ -66,6 +106,9 @@ export default function activate(pi: any) {
             return `${proj.connectionState}_${proj.clientType}_${proj.channel?.name}_${proj.self.muted}_${proj.participants.length}_${client.getIpc().isConnected()}`;
           },
           dispose: () => {
+            if (terminalState?.parts?.get?.("discord") === railComponent) {
+              terminalState.parts.delete("discord");
+            }
             client.dispose();
           },
         };

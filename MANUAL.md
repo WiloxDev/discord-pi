@@ -127,6 +127,8 @@ Si utilizas **Vesktop** (cliente ligero basado en Vencord):
 2. `discord-pi` detectará automáticamente que Vesktop está abierto mediante el handshake `READY` y mostrará la tarjeta como `Discord Voice (Vesktop) [Listo]`.
 3. Dado que arRPC emula la presencia pero no incluye el motor binario de voz C++ de Discord, el control de Mute en Vesktop se realiza mediante tu atajo global de teclado configurado en Vesktop o mediante el archivo puente `.discord-voice-state.json`.
 
+> 📘 Para ver la guía detallada de instalación paso a paso en Windows (Winget/EXE) y Linux (Flatpak/Deb/AUR), consulta [docs/VESKTOP-GUIDE.md](./docs/VESKTOP-GUIDE.md).
+
 ### Método C: Puente de Datos (Bots o Daemons Externos)
 
 Si utilizas un daemon en segundo plano o bot de Discord que monitorea tus canales, este puede volcar el estado en:

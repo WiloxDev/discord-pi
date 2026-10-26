@@ -95,4 +95,5 @@ MIT © [WiloxDev](https://github.com/WiloxDev)
 
 ## 📚 Documentación Completa
 
-Para ver el manual completo con arquitectura, diagramas, vinculación y casos de uso detallados, consulta [MANUAL.md](./MANUAL.md).
+- [MANUAL.md](./MANUAL.md): Manual general de usuario, arquitectura, diagramas y casos de uso.
+- [docs/VESKTOP-GUIDE.md](./docs/VESKTOP-GUIDE.md): Guía específica paso a paso para la integración con **Vesktop** en Windows y Linux.

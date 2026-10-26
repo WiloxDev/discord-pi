@@ -44,8 +44,7 @@ export class DiscordClient {
 
   constructor(private config: Required<DiscordPiConfig>) {
     this.ipc = new DiscordIpcConnection(config.clientId || "1290372891901239328");
-    // Intento de conexión inicial sin bloquear el hilo principal
-    void this.tryConnectIpc();
+    // Conexión estrictamente lazy/diferida para evitar intentos de conexión en comandos CLI como pi --help
   }
 
   public async tryConnectIpc(): Promise<boolean> {
