@@ -43,14 +43,22 @@ export default function activate(pi: any) {
       return;
     }
 
+    if (config.uiPlacement === "disabled") {
+      return;
+    }
+
     // Conexión lazy: solo se intenta cuando hay una interfaz interactiva disponible
     void client.tryConnectIpc();
 
     try {
-      ctx.ui.setWidget("discord", (tui: any, _theme: any) => {
-        // Enlace al estado del sidebar de Gentle-Shell si está presente
-        const SIDEBAR_STATE_KEY = Symbol.for("gentle-pi.experimental-sidebar.state");
-        const terminalState = tui?.terminal ? (tui.terminal as any)[SIDEBAR_STATE_KEY] : null;
+      const SIDEBAR_STATE_KEY = Symbol.for("gentle-pi.experimental-sidebar.state");
+
+      // Función para enlazar e inyectar el componente en el sidebar de Gentle-Shell
+      const mountSidebarRail = (terminal: any) => {
+        const terminalState = terminal ? terminal[SIDEBAR_STATE_KEY] : null;
+        if (!terminalState?.parts || typeof terminalState.parts.set !== "function") {
+          return null;
+        }
 
         const railComponent = {
           render: (railWidth: number) => {
@@ -63,9 +71,9 @@ export default function activate(pi: any) {
                 const msg = res.message || "Estado de micrófono alternado";
                 ctx.ui?.notify?.(`🎙 ${msg}`);
               });
-              return true;
+              return { handled: true };
             }
-            return false;
+            return undefined;
           },
           digest: () => {
             const proj = client.getProjection();
@@ -75,17 +83,70 @@ export default function activate(pi: any) {
           dispose: () => {},
         };
 
-        // Si Gentle-Shell tiene el mapa de partes del sidebar, registramos discord
-        if (terminalState?.parts && typeof terminalState.parts.set === "function") {
-          terminalState.parts.set("discord", railComponent);
+        // 1. Registro directo en clave "discord" (para versiones de Gentle-Shell con descubrimiento dinámico)
+        terminalState.parts.set("discord", railComponent);
+
+        // 2. Decorator pattern sobre "footer" (para versiones de Gentle-Shell con filtro estático ["footer", "agents", "todo"])
+        const originalFooter = terminalState.parts.get("footer");
+        if (originalFooter && !(originalFooter as any).__discordAttached) {
+          const decoratedFooter = {
+            __discordAttached: true,
+            render: (width: number) => {
+              const footerLines = originalFooter.render?.(width) ?? [];
+              const discordLines = railComponent.render(width) ?? [];
+              if (discordLines.length === 0) return footerLines;
+              if (footerLines.length === 0) return discordLines;
+              return [...footerLines, "", ...discordLines];
+            },
+            digest: () => {
+              const fDigest = typeof originalFooter.digest === "function" ? originalFooter.digest() : "";
+              return `${fDigest}_discord_${railComponent.digest()}`;
+            },
+            handleMouse: (evt: any) => {
+              // Si el clic impacta en la zona inferior correspondiente a Discord
+              const handledByFooter = originalFooter.handleMouse?.(evt);
+              if (handledByFooter) return handledByFooter;
+              return railComponent.handleMouse(evt);
+            },
+            invalidate: () => {
+              originalFooter.invalidate?.();
+              railComponent.invalidate();
+            },
+            dispose: () => {
+              if (terminalState.parts.get("footer") === decoratedFooter) {
+                terminalState.parts.set("footer", originalFooter);
+              }
+              originalFooter.dispose?.();
+              railComponent.dispose();
+            },
+          };
+          terminalState.parts.set("footer", decoratedFooter);
         }
+
+        return terminalState;
+      };
+
+      // Intentar montaje en el terminal actual si ya existe
+      if (ctx.ui?.terminal) {
+        mountSidebarRail(ctx.ui.terminal);
+      }
+
+      // Si el usuario configuró 'sidebar_only', nunca se monta en el chat
+      if (config.uiPlacement === "sidebar_only") {
+        return;
+      }
+
+      ctx.ui.setWidget("discord", (tui: any, _theme: any) => {
+        const terminalState = mountSidebarRail(tui?.terminal);
 
         return {
           render: (width: number) => {
             // Supresión inteligente: si el sidebar de Gentle-Shell está activo y posee el host (>= 140 cols),
-            // suprimimos la tarjeta sobre el editor para evitar duplicación visual.
-            if (terminalState?.active && terminalState?.ownsHost?.()) {
-              return [];
+            // suprimimos la tarjeta sobre el editor para evitar duplicación visual en el chat.
+            if (config.uiPlacement === "sidebar_preferred") {
+              if (terminalState?.active && terminalState?.ownsHost?.()) {
+                return [];
+              }
             }
             const proj = client.getProjection();
             return renderDiscordCard(proj, width, config);
@@ -105,9 +166,6 @@ export default function activate(pi: any) {
             return `${proj.connectionState}_${proj.clientType}_${proj.channel?.name}_${proj.self.muted}_${proj.participants.length}_${client.getIpc().isConnected()}`;
           },
           dispose: () => {
-            if (terminalState?.parts?.get?.("discord") === railComponent) {
-              terminalState.parts.delete("discord");
-            }
             client.dispose();
           },
         };

@@ -85,7 +85,8 @@ if (-not (Test-Path $UserConfig)) {
   "showAudioWhenIdle": true,
   "pollIntervalMs": 1500,
   "customStatePath": null,
-  "maxWidth": 52
+  "maxWidth": 52,
+  "uiPlacement": "sidebar_preferred"
 }
 '@
     Set-Content -Path $UserConfig -Value $DefaultConfigContent -Encoding UTF8

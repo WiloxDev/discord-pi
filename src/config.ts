@@ -16,6 +16,7 @@ const DEFAULT_CONFIG: Required<DiscordPiConfig> = {
   customStatePath: null,
   clientId: "",
   maxWidth: 54,
+  uiPlacement: "sidebar_preferred",
 };
 
 function deepMerge<T extends Record<string, any>>(target: T, source: Partial<T>): T {

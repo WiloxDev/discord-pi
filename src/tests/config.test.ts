@@ -15,4 +15,5 @@ test("loadConfig returns valid defaults", () => {
   assert.strictEqual(typeof config.defaultUsername, "string");
   assert.strictEqual(typeof config.pollIntervalMs, "number");
   assert.strictEqual(config.maxWidth, 54);
+  assert.strictEqual(config.uiPlacement, "sidebar_preferred");
 });

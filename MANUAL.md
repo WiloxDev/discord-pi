@@ -179,7 +179,8 @@ Puedes editar el archivo de configuración en tu directorio de usuario:
   "showAudioWhenIdle": true,
   "pollIntervalMs": 1500,
   "customStatePath": null,
-  "maxWidth": 52
+  "maxWidth": 52,
+  "uiPlacement": "sidebar_preferred"
 }
 ```
 
@@ -190,6 +191,11 @@ Puedes editar el archivo de configuración en tu directorio de usuario:
 - `pollIntervalMs`: Frecuencia de actualización en milisegundos (por defecto `1500ms`).
 - `customStatePath`: Ruta personalizada absoluta si el estado se genera en otra ubicación.
 - `maxWidth`: Ancho máximo en columnas de la tarjeta en la terminal (por defecto `52`).
+- `uiPlacement`: Control de ubicación visual:
+  - `"sidebar_preferred"` (Por defecto): Si Gentle-Shell tiene el sidebar activo ($\ge 140$ columnas), se monta en el sidebar y **deja la barra del chat 100% limpia**.
+  - `"sidebar_only"`: Solo se muestra en el sidebar derecho. Jamás se dibuja en la caja del chat.
+  - `"chat_above"`: Fuerza el montaje sobre el editor.
+  - `"disabled"`: Apaga el renderizado visual manteniendo activos los comandos de terminal.
 
 ---
 

@@ -54,6 +54,7 @@ test("getStateCandidatePaths includes expected user paths", () => {
     customStatePath: null,
     clientId: "",
     maxWidth: 54,
+    uiPlacement: "sidebar_preferred",
   });
 
   assert.ok(paths.length >= 2);
@@ -84,6 +85,7 @@ test("DiscordClient initializes lazily without immediate IPC connection", () => 
     customStatePath: null,
     clientId: "",
     maxWidth: 54,
+    uiPlacement: "sidebar_preferred",
   });
 
   // Client should not be connected immediately on instantiation

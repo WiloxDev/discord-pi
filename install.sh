@@ -72,7 +72,8 @@ if [ ! -f "$USER_CONFIG" ]; then
   "showAudioWhenIdle": true,
   "pollIntervalMs": 1500,
   "customStatePath": null,
-  "maxWidth": 52
+  "maxWidth": 52,
+  "uiPlacement": "sidebar_preferred"
 }
 EOF
 fi

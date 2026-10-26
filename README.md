@@ -68,9 +68,16 @@ El instalador genera automáticamente tu archivo de configuración:
   "showAudioWhenIdle": true,
   "pollIntervalMs": 1500,
   "customStatePath": null,
-  "maxWidth": 52
+  "maxWidth": 52,
+  "uiPlacement": "sidebar_preferred"
 }
 ```
+
+### Opciones de visualización (`uiPlacement`):
+- `"sidebar_preferred"` (Por defecto): Si el sidebar derecho de Gentle-Shell está activo ($\ge 140$ columnas), se monta en el sidebar y **mantiene el chat 100% limpio**. Si la terminal se reduce, usa fallback adaptativo.
+- `"sidebar_only"`: Se monta **exclusivamente en el sidebar lateral**. Nunca invade el chat ni la barra de entrada de texto.
+- `"chat_above"`: Fuerza el montaje sobre el editor de texto.
+- `"disabled"`: Desactiva el renderizado visual (los comandos `/discord` siguen funcionando).
 
 ---
 

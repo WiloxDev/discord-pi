@@ -29,6 +29,7 @@ export interface DiscordVoiceSelfState {
 
 export type DiscordClientType = "discord_official" | "vesktop" | "unknown";
 export type PiEnvironment = "gentle-pi" | "pi-native" | "unknown";
+export type UiPlacement = "sidebar_only" | "sidebar_preferred" | "chat_above" | "disabled";
 
 export interface DiscordVoiceProjection {
   connected: boolean;
@@ -54,4 +55,5 @@ export interface DiscordPiConfig {
   customStatePath?: string | null;
   clientId?: string;
   maxWidth?: number;
+  uiPlacement?: UiPlacement;
 }

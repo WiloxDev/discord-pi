@@ -16,6 +16,7 @@ const baseConfig: Required<DiscordPiConfig> = {
   customStatePath: null,
   clientId: "",
   maxWidth: 52,
+  uiPlacement: "sidebar_preferred",
 };
 
 test("renderDiscordCard renders disconnected state within maxWidth", () => {
