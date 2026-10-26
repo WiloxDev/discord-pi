@@ -40,6 +40,7 @@ export interface DiscordVoiceProjection {
 export interface DiscordPiConfig {
   enabled?: boolean;
   defaultUsername?: string;
+  defaultUserId?: string;
   participantPreview?: number;
   showSpeaking?: boolean;
   showBitrate?: boolean;
@@ -47,4 +48,6 @@ export interface DiscordPiConfig {
   showAudioWhenIdle?: boolean;
   pollIntervalMs?: number;
   customStatePath?: string | null;
+  clientId?: string;
+  maxWidth?: number;
 }

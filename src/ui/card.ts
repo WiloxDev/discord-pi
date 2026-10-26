@@ -34,15 +34,23 @@ export function renderDiscordCard(
   width: number,
   config: Required<DiscordPiConfig>,
 ): string[] {
-  const innerWidth = Math.max(10, width - 4);
+  // Acotar ancho para evitar deformación estética en terminales ultra anchas
+  const targetMax = typeof config.maxWidth === "number" && config.maxWidth >= 30 ? config.maxWidth : 52;
+  const effectiveWidth = Math.max(28, Math.min(width, targetMax));
+  const innerWidth = Math.max(10, effectiveWidth - 4);
 
   if (!proj.connected && !proj.channel) {
+    const statusLabel =
+      proj.connectionState === "ready"
+        ? color("mint", "• Listo (Discord abierto)")
+        : color("coral", "• Desconectado");
+
     const line = padBetween(
-      `${color("muted", "Estado")} ${color("coral", "• Desconectado")}`,
+      `${color("muted", "Estado")} ${statusLabel}`,
       color("muted", "[ ↗ Abrir ]"),
       innerWidth,
     );
-    return renderClosedCard("Discord Voice", "🎧", [line], width);
+    return renderClosedCard("Discord Voice", "🎧", [line], effectiveWidth);
   }
 
   const lines: string[] = [];
@@ -92,5 +100,5 @@ export function renderDiscordCard(
     }
   }
 
-  return renderClosedCard("Discord Voice", "🎧", lines, width);
+  return renderClosedCard("Discord Voice", "🎧", lines, effectiveWidth);
 }

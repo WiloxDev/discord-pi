@@ -1,78 +1,85 @@
 # 🎧 Discord PI Voice Operations
 
-Card reactiva e interactiva de Discord Voice para el sidebar de **Gentle-Pi / Pi Agent**.
+Card reactiva e interactiva de Discord Voice para **Pi Agent** y **Gentle-Pi**, con soporte nativo de **Windows y Linux**.
 
 ---
 
 ## ✨ Características
 
 - 🎙 **Telemetría de Voz en Tiempo Real**: Visualización de canal activo, bitrate de sala y latencia (ping en ms).
-- 🟢 **Prioridad de Hablantes**: Detección dinámica de participantes que están hablando en vivo (`🟢`), tu usuario (`Wilson Lavio`) y lista organizada alfabéticamente.
-- 🔇 **Control Rápido de Micrófono**: Comandos interactivos y clic en tarjeta para silenciar/activar (`Mute / Unmute`).
+- 🪟 **Soporte Multiplataforma Total (Windows + Linux)**:
+  - **Windows**: Conexión nativa por Named Pipes (`\\.\pipe\discord-ipc-0..9`) y rutas en `%APPDATA%` / `%USERPROFILE%`.
+  - **Linux / macOS**: Conexión nativa por UNIX Domain Sockets (`$XDG_RUNTIME_DIR/discord-ipc-0`, Snap, Flatpak) y `$HOME`.
+- 🟢 **Prioridad de Hablantes**: Detección dinámica de participantes que están hablando en vivo (`🟢`), tu usuario (`Wilson Lavio` o por ID de Discord) y lista alfabética.
+- 🔇 **Control Rápido de Micrófono**: Comandos interactivos `/discord mute` y clic en tarjeta con integración a Discord IPC nativo.
 - 👥 **Contador de Participantes**: Inspección rápida de la cantidad de usuarios presentes en la llamada.
-- ⚡ **Desacoplado y 100% Autónomo**: Sin dependencias complejas ni ataduras a Windows/PowerShell ni ecosistemas externos heredados. Fallback elegante a modo desconectado cuando Discord no está en llamada.
+- 🛡️ **Arquitectura Híbrida a Prueba de Fallos**:
+  1. Conexión IPC local directa si Discord Desktop está activo.
+  2. Fallback a archivo de telemetría JSON (`~/.discord-voice-state.json` o `%USERPROFILE%\.discord-voice-state.json`) para daemons/bots.
+  3. Estado desconectado elegante cuando Discord está cerrado o sin canal activo.
 
 ---
 
-## 🚀 Instalación Rápida (Cliente)
+## 🚀 Instalación Rápida
 
-### 🤖 Para Agentes AI (Copiar y Pegar)
-Si estás usando un agente AI (Pi, Claude, Cursor), indícale:
-```text
-Instala y activa la extensión de Discord en mi Gentle-Pi ejecutando su instalador oficial:
-curl -sSL https://raw.githubusercontent.com/WiloxDev/discord-pi/main/install.sh | bash
-Verifica que dist/index.js se haya creado y avísame al terminar.
-```
-
----
-
-### En tu Terminal
-Para instalarlo de forma manual o automática:
-
+### 🐧 En Linux / macOS (Bash)
 ```bash
 curl -sSL https://raw.githubusercontent.com/WiloxDev/discord-pi/main/install.sh | bash
 ```
 
-O clonando manualmente el repositorio:
+### 🪟 En Windows (PowerShell)
+Ejecuta en una consola de PowerShell:
+```powershell
+irm https://raw.githubusercontent.com/WiloxDev/discord-pi/main/install.ps1 | iex
+```
 
+### 📦 Clonación Manual (Cualquier SO)
 ```bash
+# Linux / macOS
 git clone https://github.com/WiloxDev/discord-pi.git ~/.pi/agent/extensions/discord-pi
 cd ~/.pi/agent/extensions/discord-pi
-npm install
-npm run build
+npm install && npm run build
+
+# Windows (PowerShell)
+git clone https://github.com/WiloxDev/discord-pi.git "$env:USERPROFILE\.pi\agent\extensions\discord-pi"
+cd "$env:USERPROFILE\.pi\agent\extensions\discord-pi"
+npm install; npm run build
 ```
 
 ---
 
-## ⚙️ Configuración (`~/.discord-pirc.json`)
+## ⚙️ Configuración (`~/.discord-pirc.json` o `%USERPROFILE%\.discord-pirc.json`)
 
-El instalador genera automáticamente tu archivo de configuración en `~/.discord-pirc.json`:
+El instalador genera automáticamente tu archivo de configuración:
 
 ```json
 {
   "enabled": true,
   "defaultUsername": "Wilson Lavio",
+  "defaultUserId": "1532522904032514197",
   "participantPreview": 3,
   "showSpeaking": true,
   "showBitrate": true,
   "showPing": true,
   "showAudioWhenIdle": true,
   "pollIntervalMs": 1500,
-  "customStatePath": null
+  "customStatePath": null,
+  "maxWidth": 52
 }
 ```
 
 ---
 
-## 💻 Comandos en la Terminal de Gentle-Pi
+## 💻 Comandos en la Terminal de Pi
 
 Puedes interactuar con Discord mediante el comando `/discord`:
 
 | Comando | Acción |
 | :--- | :--- |
-| `/discord mute` | Alterna entre silenciado y activo |
+| `/discord mute` (o clic) | Alterna el micrófono entre silenciado (`🔇`) y activo (`🎙`) |
+| `/discord status` | Muestra el estado del transporte IPC, sistema operativo y canal |
 | `/discord users` | Muestra el resumen de participantes y quién habla |
-| `/discord refresh` | Fuerza la actualización de telemetría |
+| `/discord refresh` | Fuerza la reconexión y actualización de telemetría |
 
 ---
 
@@ -84,5 +91,4 @@ MIT © [WiloxDev](https://github.com/WiloxDev)
 
 ## 📚 Documentación Completa
 
-Para ver el manual completo con arquitectura, integración para desarrolladores, diagramas y casos de uso detallados, consulta [MANUAL.md](./MANUAL.md).
-
+Para ver el manual completo con arquitectura, diagramas, vinculación y casos de uso detallados, consulta [MANUAL.md](./MANUAL.md).

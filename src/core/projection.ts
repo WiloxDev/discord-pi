@@ -107,6 +107,7 @@ export function buildDiscordVoiceProjection(
       const isSelf = Boolean(
         v.isSelf ||
           (self.userId && v.userId === self.userId) ||
+          (config.defaultUserId && String(v.userId) === String(config.defaultUserId)) ||
           (v.displayName && v.displayName.toLowerCase() === fallbackUsername.toLowerCase()),
       );
       return {

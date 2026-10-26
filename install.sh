@@ -45,7 +45,8 @@ if [ ! -f "$USER_CONFIG" ]; then
   "showPing": true,
   "showAudioWhenIdle": true,
   "pollIntervalMs": 1500,
-  "customStatePath": null
+  "customStatePath": null,
+  "maxWidth": 52
 }
 EOF
 fi
@@ -54,4 +55,4 @@ echo ""
 echo "✅ ¡Instalación completada con éxito!"
 echo "📍 Ubicación: $DEFAULT_EXT_DIR"
 echo "⚙️ Configuración: $USER_CONFIG (Totalmente personalizable)"
-echo "✨ Al abrir tu próxima sesión de Gentle-Pi, el widget se montará en tu sidebar derecho."
+echo "✨ Al abrir tu próxima sesión de Gentle-Pi o Pi Agent, el widget se montará automáticamente."

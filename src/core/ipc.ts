@@ -3,17 +3,72 @@ import * as path from "node:path";
 import * as os from "node:os";
 import { buildDiscordVoiceProjection } from "./projection.js";
 import { DiscordVoiceProjection, DiscordPiConfig } from "./types.js";
+import { DiscordIpcConnection } from "./discord-ipc.js";
 
 /**
- * Gestor de estado y puente local para Discord.
- * Lee estados desde sockets IPC de Discord o archivos de estado locales.
+ * Retorna las rutas candidatas donde puede residir el archivo de estado de Discord,
+ * adaptándose a Linux y Windows.
+ */
+export function getStateCandidatePaths(config: Required<DiscordPiConfig>): string[] {
+  const home = os.homedir();
+  const paths: (string | null | undefined)[] = [
+    config.customStatePath,
+    path.join(home, ".discord-voice-state.json"),
+  ];
+
+  if (process.platform === "win32") {
+    if (process.env.LOCALAPPDATA) {
+      paths.push(path.join(process.env.LOCALAPPDATA, "wilox-tools", "discord-voice", "status.json"));
+    }
+  } else {
+    const stateHome = process.env.XDG_STATE_HOME || path.join(home, ".local", "state");
+    paths.push(path.join(stateHome, "wilox-tools", "discord-voice", "status.json"));
+  }
+
+  // Fixture de desarrollo/pruebas
+  paths.push(path.join(process.cwd(), "fixtures", "sample-status.json"));
+
+  return paths.filter((p): p is string => Boolean(p));
+}
+
+/**
+ * Gestor de estado y puente local para Discord (Windows y Linux).
+ * Conecta directamente vía Named Pipe / Unix Socket y soporta fallback a archivos de estado JSON.
  */
 export class DiscordClient {
   private lastPoll = 0;
   private cachedProjection: DiscordVoiceProjection | null = null;
   private optimisticMute: boolean | null = null;
+  private ipc: DiscordIpcConnection;
+  private lastIpcAttempt = 0;
 
-  constructor(private config: Required<DiscordPiConfig>) {}
+  constructor(private config: Required<DiscordPiConfig>) {
+    this.ipc = new DiscordIpcConnection(config.clientId || "1290372891901239328");
+    // Intento de conexión inicial sin bloquear el hilo principal
+    void this.tryConnectIpc();
+  }
+
+  public async tryConnectIpc(): Promise<boolean> {
+    const now = Date.now();
+    if (this.ipc.isConnected()) {
+      return true;
+    }
+    // Evitar saturar intentos de conexión repetidos
+    if (now - this.lastIpcAttempt < 5000) {
+      return false;
+    }
+    this.lastIpcAttempt = now;
+
+    try {
+      return await this.ipc.connect();
+    } catch {
+      return false;
+    }
+  }
+
+  public getIpc(): DiscordIpcConnection {
+    return this.ipc;
+  }
 
   public invalidate(): void {
     this.lastPoll = 0;
@@ -33,6 +88,11 @@ export class DiscordClient {
     }
     this.lastPoll = now;
 
+    // Disparar reconexión asíncrona de IPC si no está conectado
+    if (!this.ipc.isConnected()) {
+      void this.tryConnectIpc();
+    }
+
     const rawStatus = this.readRawState();
     const proj = buildDiscordVoiceProjection(rawStatus, this.config);
 
@@ -45,28 +105,42 @@ export class DiscordClient {
   }
 
   private readRawState(): any {
-    const candidatePaths = [
-      this.config.customStatePath,
-      path.join(os.homedir(), ".discord-voice-state.json"),
-      path.join(os.homedir(), ".local", "state", "wilox-tools", "discord-voice", "status.json"),
-      path.join(process.cwd(), "fixtures", "sample-status.json"),
-    ].filter(Boolean) as string[];
+    const candidatePaths = getStateCandidatePaths(this.config);
 
     for (const file of candidatePaths) {
       try {
         if (fs.existsSync(file)) {
           const content = fs.readFileSync(file, "utf8");
+          if (!content.trim()) continue;
           const parsed = JSON.parse(content);
           if (parsed && typeof parsed === "object") {
             return parsed;
           }
         }
       } catch {
-        // Continuar al siguiente fallback
+        // Continuar al siguiente fallback en caso de lectura o parse incompleto
       }
     }
 
-    // Fallback por defecto si no hay archivo disponible
+    // Si el socket IPC nativo está conectado, proveer estado listo de Discord Desktop
+    if (this.ipc.isConnected()) {
+      const user = this.ipc.getCurrentUser();
+      return {
+        version: 1,
+        app_open: true,
+        confirmed: true,
+        state: "ready",
+        channel: null,
+        self: {
+          displayName: user?.global_name || user?.username || this.config.defaultUsername,
+          userId: user?.id || this.config.defaultUserId || null,
+          muted: this.optimisticMute ?? false,
+        },
+        participants: [],
+      };
+    }
+
+    // Fallback por defecto si no hay archivo ni socket disponible
     return {
       version: 1,
       app_open: false,
@@ -78,8 +152,19 @@ export class DiscordClient {
     };
   }
 
-  public toggleMute(): void {
+  public async toggleMute(): Promise<boolean> {
     const proj = this.getProjection();
-    this.setOptimisticMute(!proj.self.muted);
+    const targetMute = !proj.self.muted;
+    this.setOptimisticMute(targetMute);
+
+    if (this.ipc.isConnected()) {
+      return await this.ipc.setMute(targetMute);
+    }
+
+    return false;
+  }
+
+  public dispose(): void {
+    this.ipc.cleanup();
   }
 }

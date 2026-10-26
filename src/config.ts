@@ -6,6 +6,7 @@ import { DiscordPiConfig } from "./core/types.js";
 const DEFAULT_CONFIG: Required<DiscordPiConfig> = {
   enabled: true,
   defaultUsername: "Wilson Lavio",
+  defaultUserId: "",
   participantPreview: 3,
   showSpeaking: true,
   showBitrate: true,
@@ -13,6 +14,8 @@ const DEFAULT_CONFIG: Required<DiscordPiConfig> = {
   showAudioWhenIdle: true,
   pollIntervalMs: 1500,
   customStatePath: null,
+  clientId: "",
+  maxWidth: 54,
 };
 
 function deepMerge<T extends Record<string, any>>(target: T, source: Partial<T>): T {
@@ -30,13 +33,27 @@ function deepMerge<T extends Record<string, any>>(target: T, source: Partial<T>)
   return output;
 }
 
-export function loadConfig(): Required<DiscordPiConfig> {
+export function getConfigCandidatePaths(): string[] {
   const home = os.homedir();
-  const candidatePaths = [
+  const paths: (string | null | undefined)[] = [
     path.join(process.cwd(), ".discord-pi.json"),
     path.join(home, ".discord-pirc.json"),
-    path.join(home, ".config", "discord-pi", "config.json"),
   ];
+
+  if (process.platform === "win32") {
+    if (process.env.APPDATA) {
+      paths.push(path.join(process.env.APPDATA, "discord-pi", "config.json"));
+    }
+  } else {
+    const xdgConfig = process.env.XDG_CONFIG_HOME || path.join(home, ".config");
+    paths.push(path.join(xdgConfig, "discord-pi", "config.json"));
+  }
+
+  return paths.filter((p): p is string => Boolean(p));
+}
+
+export function loadConfig(): Required<DiscordPiConfig> {
+  const candidatePaths = getConfigCandidatePaths();
 
   for (const configPath of candidatePaths) {
     try {
