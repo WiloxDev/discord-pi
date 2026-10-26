@@ -1,6 +1,6 @@
 {
   "name": "discord-pi",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Discord Voice Operations Card y widget interactivo para el sidebar de Gentle-Pi",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
