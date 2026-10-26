@@ -38,13 +38,12 @@ export default function activate(pi: any) {
 
   const client = new DiscordClient(config);
 
-  // Registro del Widget en Pi Agent / Gentle-Pi
-  pi.on("session_start", async (_event: any, ctx: any) => {
+  const registerDiscordUI = (ctx: any) => {
     if (!ctx?.hasUI || typeof ctx.ui?.setWidget !== "function") {
       return;
     }
 
-    // Conexión lazy: solo se intenta cuando hay una sesión interactiva iniciada
+    // Conexión lazy: solo se intenta cuando hay una interfaz interactiva disponible
     void client.tryConnectIpc();
 
     try {
@@ -116,7 +115,19 @@ export default function activate(pi: any) {
     } catch (err) {
       console.error("[discord-pi] Error registrando widget:", err);
     }
+  };
+
+  // Registro del Widget en sesión nueva o reanudada
+  pi.on("session_start", async (_event: any, ctx: any) => {
+    registerDiscordUI(ctx);
   });
+
+  // Respaldo para montaje instantáneo tras /reload o turnos en curso
+  if (typeof pi.on === "function") {
+    pi.on("turn_start", async (_event: any, ctx: any) => {
+      registerDiscordUI(ctx);
+    });
+  }
 
   // Registro del comando de consola /discord
   if (typeof pi.registerCommand === "function") {
@@ -128,6 +139,7 @@ export default function activate(pi: any) {
         switch (subcmd) {
           case "mute":
           case "toggle": {
+            registerDiscordUI(ctx);
             const res = await client.toggleMute();
             const proj = client.getProjection();
             const stateLabel = proj.self.muted ? "Silenciado 🔇" : "Activo 🎙";
@@ -137,6 +149,7 @@ export default function activate(pi: any) {
           }
           case "status":
           case "info": {
+            registerDiscordUI(ctx);
             const ipcConnected = client.getIpc().isConnected();
             const proj = client.getProjection();
             const osType = process.platform === "win32" ? "Windows" : "Linux/POSIX";
@@ -158,12 +171,14 @@ export default function activate(pi: any) {
             break;
           }
           case "refresh":
+            registerDiscordUI(ctx);
             client.invalidate();
             await client.tryConnectIpc();
             ctx.ui?.notify?.("🔄 Estado de Discord y conexión IPC actualizados.");
             break;
           case "users":
           case "participantes": {
+            registerDiscordUI(ctx);
             const proj = client.getProjection();
             const total = proj.participants.length;
             const speaking = proj.speakingCount;

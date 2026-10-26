@@ -12,8 +12,12 @@ Write-Host "🎧 Instalando 'Discord PI Voice Operations' para Windows..." -Fore
 
 # 1. Determinar dinámicamente el directorio de extensiones de Pi
 $PiExtBase = ""
-if ($env:PI_AGENT_DIR -and (Test-Path (Join-Path $env:PI_AGENT_DIR "extensions"))) {
+if ($env:PI_CODING_AGENT_DIR -and (Test-Path (Join-Path $env:PI_CODING_AGENT_DIR "extensions"))) {
+    $PiExtBase = Join-Path $env:PI_CODING_AGENT_DIR "extensions"
+} elseif ($env:PI_AGENT_DIR -and (Test-Path (Join-Path $env:PI_AGENT_DIR "extensions"))) {
     $PiExtBase = Join-Path $env:PI_AGENT_DIR "extensions"
+} elseif (Test-Path (Join-Path $HomeDir ".gentle-shell\agent\extensions")) {
+    $PiExtBase = Join-Path $HomeDir ".gentle-shell\agent\extensions"
 } elseif (Test-Path (Join-Path $HomeDir ".pi\agent-wilox\extensions")) {
     $PiExtBase = Join-Path $HomeDir ".pi\agent-wilox\extensions"
 } elseif (Test-Path (Join-Path $HomeDir ".pi\agent\extensions")) {

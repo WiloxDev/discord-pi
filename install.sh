@@ -10,8 +10,12 @@ echo "🎧 Instalando 'Discord PI Voice Operations' (Multiplataforma)..."
 
 # 1. Determinar dinámicamente el directorio de extensiones de Pi
 PI_EXT_BASE=""
-if [ -n "$PI_AGENT_DIR" ] && [ -d "$PI_AGENT_DIR/extensions" ]; then
+if [ -n "$PI_CODING_AGENT_DIR" ] && [ -d "$PI_CODING_AGENT_DIR/extensions" ]; then
+    PI_EXT_BASE="$PI_CODING_AGENT_DIR/extensions"
+elif [ -n "$PI_AGENT_DIR" ] && [ -d "$PI_AGENT_DIR/extensions" ]; then
     PI_EXT_BASE="$PI_AGENT_DIR/extensions"
+elif [ -d "$HOME/.gentle-shell/agent/extensions" ]; then
+    PI_EXT_BASE="$HOME/.gentle-shell/agent/extensions"
 elif [ -d "$HOME/.pi/agent-wilox/extensions" ]; then
     PI_EXT_BASE="$HOME/.pi/agent-wilox/extensions"
 elif [ -d "$HOME/.pi/agent/extensions" ]; then
