@@ -30,10 +30,11 @@ test("buildDiscordVoiceProjection handles offline state", () => {
   assert.strictEqual(proj.self.displayName, "Wilox");
 });
 
-test("buildDiscordVoiceProjection identifies self by defaultUserId", () => {
+test("buildDiscordVoiceProjection identifies self by defaultUserId and clientType", () => {
   const rawStatus = {
     app_open: true,
     state: "live",
+    client_type: "vesktop",
     channel: "dev-room",
     bitrate_kbps: 64,
     ping_ms: 20,
@@ -49,6 +50,7 @@ test("buildDiscordVoiceProjection identifies self by defaultUserId", () => {
   });
 
   assert.strictEqual(proj.connected, true);
+  assert.strictEqual(proj.clientType, "vesktop");
   assert.strictEqual(proj.channel?.name, "dev-room");
   const selfParticipant = proj.participants.find((p) => p.isSelf);
   assert.ok(selfParticipant);

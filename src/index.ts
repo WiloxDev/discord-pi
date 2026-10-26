@@ -1,6 +1,31 @@
 import { loadConfig } from "./config.js";
 import { DiscordClient } from "./core/ipc.js";
 import { renderDiscordCard } from "./ui/card.js";
+import { PiEnvironment } from "./core/types.js";
+
+/**
+ * Detecta si la extensión se ejecuta en Gentle-Pi o en Pi Agent nativo.
+ */
+export function detectPiEnvironment(ctx?: any): PiEnvironment {
+  try {
+    if (ctx?.ui?.terminal) {
+      const term = ctx.ui.terminal as any;
+      const symbols = Object.getOwnPropertySymbols(term);
+      const isGentle = symbols.some((s) => String(s).includes("gentle-pi"));
+      if (isGentle) return "gentle-pi";
+    }
+    if (
+      process.env.GENTLE_PI_CONFIG_HOME ||
+      (process.env.PI_AGENT_DIR && process.env.PI_AGENT_DIR.includes("agent")) ||
+      (process.env.PI_THEME && process.env.PI_THEME.toLowerCase().includes("gentle"))
+    ) {
+      return "gentle-pi";
+    }
+  } catch {
+    // Continuar con fallback
+  }
+  return "pi-native";
+}
 
 /**
  * Punto de entrada oficial de la extensión para Gentle-Pi / Pi Agent.
@@ -28,11 +53,9 @@ export default function activate(pi: any) {
           },
           handleMouse: (evt: any) => {
             if (evt?.type === "click") {
-              void client.toggleMute().then((ipcOk) => {
-                const msg = ipcOk
-                  ? "🎙 Micrófono alternado directamente en Discord."
-                  : "🎙 Micrófono alternado (Modo local).";
-                ctx.ui?.notify?.(msg);
+              void client.toggleMute().then((res) => {
+                const msg = res.message || "Estado de micrófono alternado";
+                ctx.ui?.notify?.(`🎙 ${msg}`);
               });
               return true;
             }
@@ -40,7 +63,7 @@ export default function activate(pi: any) {
           },
           digest: () => {
             const proj = client.getProjection();
-            return `${proj.connectionState}_${proj.channel?.name}_${proj.self.muted}_${proj.participants.length}_${client.getIpc().isConnected()}`;
+            return `${proj.connectionState}_${proj.clientType}_${proj.channel?.name}_${proj.self.muted}_${proj.participants.length}_${client.getIpc().isConnected()}`;
           },
           dispose: () => {
             client.dispose();
@@ -62,13 +85,11 @@ export default function activate(pi: any) {
         switch (subcmd) {
           case "mute":
           case "toggle": {
-            const ipcOk = await client.toggleMute();
+            const res = await client.toggleMute();
             const proj = client.getProjection();
             const stateLabel = proj.self.muted ? "Silenciado 🔇" : "Activo 🎙";
-            const msg = ipcOk
-              ? `Discord: Micrófono ${stateLabel} (vía IPC nativo).`
-              : `Discord: Micrófono ${stateLabel} (local/simulado).`;
-            ctx.ui?.notify?.(msg);
+            const detail = res.message ? ` (${res.message})` : "";
+            ctx.ui?.notify?.(`Discord: Micrófono ${stateLabel}${detail}`);
             break;
           }
           case "status":
@@ -76,11 +97,21 @@ export default function activate(pi: any) {
             const ipcConnected = client.getIpc().isConnected();
             const proj = client.getProjection();
             const osType = process.platform === "win32" ? "Windows" : "Linux/POSIX";
+            const clientName =
+              proj.clientType === "vesktop"
+                ? "Vesktop (arRPC)"
+                : proj.clientType === "discord_official"
+                  ? "Discord Oficial"
+                  : "Desconocido / Puente JSON";
             const transport = ipcConnected
-              ? `IPC Nativo (${osType})`
+              ? `IPC Nativo [${clientName}]`
               : `Puente de Estado JSON / Fallback`;
+            const piEnv = detectPiEnvironment(ctx);
+            const piLabel = piEnv === "gentle-pi" ? "Gentle-Pi / Gentle-Shell" : "Pi Agent Nativo";
             const ch = proj.channel?.name ? `#${proj.channel.name}` : "Sin canal de voz";
-            ctx.ui?.notify?.(`[Discord-PI] OS: ${osType} | Conexión: ${transport} | Estado: ${proj.connectionState} | Canal: ${ch}`);
+            ctx.ui?.notify?.(
+              `[Discord-PI] OS: ${osType} | Entorno: ${piLabel} | Discord: ${clientName} | Conexión: ${transport} | Canal: ${ch}`
+            );
             break;
           }
           case "refresh":

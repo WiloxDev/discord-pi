@@ -22,6 +22,7 @@ test("renderDiscordCard renders disconnected state within maxWidth", () => {
   const proj: DiscordVoiceProjection = {
     connected: false,
     connectionState: "offline",
+    clientType: "unknown",
     pingMs: null,
     channel: null,
     self: { displayName: "Wilson Lavio", muted: false, deafened: false, inputVolume: null, outputVolume: null, inputMode: null },
@@ -36,10 +37,11 @@ test("renderDiscordCard renders disconnected state within maxWidth", () => {
   assert.ok(lines.some((l) => l.includes("Desconectado")));
 });
 
-test("renderDiscordCard shows ready state when Discord app is open", () => {
+test("renderDiscordCard shows ready state with Vesktop badge", () => {
   const proj: DiscordVoiceProjection = {
     connected: false,
     connectionState: "ready",
+    clientType: "vesktop",
     pingMs: null,
     channel: null,
     self: { displayName: "Wilson Lavio", muted: false, deafened: false, inputVolume: null, outputVolume: null, inputMode: null },
@@ -48,13 +50,32 @@ test("renderDiscordCard shows ready state when Discord app is open", () => {
   };
 
   const lines = renderDiscordCard(proj, 60, baseConfig);
-  assert.ok(lines.some((l) => l.includes("Listo (Discord abierto)")));
+  assert.ok(lines.some((l) => l.includes("Listo [Vesktop]")));
+  assert.ok(lines[0].includes("Discord Voice (Vesktop)"));
+});
+
+test("renderDiscordCard shows ready state with Discord Oficial badge", () => {
+  const proj: DiscordVoiceProjection = {
+    connected: false,
+    connectionState: "ready",
+    clientType: "discord_official",
+    pingMs: null,
+    channel: null,
+    self: { displayName: "Wilson Lavio", muted: false, deafened: false, inputVolume: null, outputVolume: null, inputMode: null },
+    participants: [],
+    speakingCount: 0,
+  };
+
+  const lines = renderDiscordCard(proj, 60, baseConfig);
+  assert.ok(lines.some((l) => l.includes("Listo [Oficial]")));
+  assert.ok(lines[0].includes("Discord Voice (Oficial)"));
 });
 
 test("renderDiscordCard renders live voice call details", () => {
   const proj: DiscordVoiceProjection = {
     connected: true,
     connectionState: "online",
+    clientType: "discord_official",
     pingMs: 24,
     channel: { name: "general", bitrateKbps: 64, userLimit: null },
     self: { displayName: "Wilson Lavio", muted: true, deafened: false, inputVolume: 100, outputVolume: 100, inputMode: null },

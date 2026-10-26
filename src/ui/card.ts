@@ -39,10 +39,24 @@ export function renderDiscordCard(
   const effectiveWidth = Math.max(28, Math.min(width, targetMax));
   const innerWidth = Math.max(10, effectiveWidth - 4);
 
+  const cardTitle =
+    proj.clientType === "vesktop"
+      ? "Discord Voice (Vesktop)"
+      : proj.clientType === "discord_official"
+        ? "Discord Voice (Oficial)"
+        : "Discord Voice";
+
   if (!proj.connected && !proj.channel) {
+    const clientBadge =
+      proj.clientType === "vesktop"
+        ? " [Vesktop]"
+        : proj.clientType === "discord_official"
+          ? " [Oficial]"
+          : "";
+
     const statusLabel =
       proj.connectionState === "ready"
-        ? color("mint", "• Listo (Discord abierto)")
+        ? color("mint", `• Listo${clientBadge}`)
         : color("coral", "• Desconectado");
 
     const line = padBetween(
@@ -50,7 +64,7 @@ export function renderDiscordCard(
       color("muted", "[ ↗ Abrir ]"),
       innerWidth,
     );
-    return renderClosedCard("Discord Voice", "🎧", [line], effectiveWidth);
+    return renderClosedCard(cardTitle, "🎧", [line], effectiveWidth);
   }
 
   const lines: string[] = [];
@@ -100,5 +114,5 @@ export function renderDiscordCard(
     }
   }
 
-  return renderClosedCard("Discord Voice", "🎧", lines, effectiveWidth);
+  return renderClosedCard(cardTitle, "🎧", lines, effectiveWidth);
 }

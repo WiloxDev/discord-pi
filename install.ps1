@@ -7,17 +7,40 @@ $ErrorActionPreference = "Stop"
 
 $RepoUrl = "https://github.com/WiloxDev/discord-pi.git"
 $HomeDir = [Environment]::GetFolderPath("UserProfile")
-$PiExtBase = Join-Path $HomeDir ".pi\agent\extensions"
-$DefaultExtDir = Join-Path $PiExtBase "discord-pi"
 
 Write-Host "🎧 Instalando 'Discord PI Voice Operations' para Windows..." -ForegroundColor Cyan
 
-# 1. Crear directorio base de extensiones si no existe
+# 1. Determinar dinámicamente el directorio de extensiones de Pi
+$PiExtBase = ""
+if ($env:PI_AGENT_DIR -and (Test-Path (Join-Path $env:PI_AGENT_DIR "extensions"))) {
+    $PiExtBase = Join-Path $env:PI_AGENT_DIR "extensions"
+} elseif (Test-Path (Join-Path $HomeDir ".pi\agent-wilox\extensions")) {
+    $PiExtBase = Join-Path $HomeDir ".pi\agent-wilox\extensions"
+} elseif (Test-Path (Join-Path $HomeDir ".pi\agent\extensions")) {
+    $PiExtBase = Join-Path $HomeDir ".pi\agent\extensions"
+} elseif (Test-Path (Join-Path $HomeDir ".pi\extensions")) {
+    $PiExtBase = Join-Path $HomeDir ".pi\extensions"
+} else {
+    $PiExtBase = Join-Path $HomeDir ".pi\agent\extensions"
+}
+
 if (-not (Test-Path $PiExtBase)) {
     New-Item -ItemType Directory -Path $PiExtBase -Force | Out-Null
 }
 
-# 2. Clonar o Actualizar el Repositorio
+$DefaultExtDir = Join-Path $PiExtBase "discord-pi"
+
+# 2. Detección informativa de cliente Discord en Windows
+$DiscordFlavor = "No detectado en ejecución"
+if (Get-Process -Name "Discord" -ErrorAction SilentlyContinue) {
+    $DiscordFlavor = "Discord Oficial"
+} elseif (Get-Process -Name "Vesktop" -ErrorAction SilentlyContinue) {
+    $DiscordFlavor = "Vesktop"
+}
+Write-Host "🔍 Entorno Pi: $PiExtBase" -ForegroundColor Gray
+Write-Host "🔍 Cliente Discord detectado: $DiscordFlavor" -ForegroundColor Cyan
+
+# 3. Clonar o Actualizar el Repositorio
 if (Test-Path (Join-Path $DefaultExtDir ".git")) {
     Write-Host "🔄 Actualizando versión existente en $DefaultExtDir..." -ForegroundColor Yellow
     git -C "$DefaultExtDir" pull --ff-only

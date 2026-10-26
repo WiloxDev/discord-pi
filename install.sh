@@ -5,15 +5,37 @@
 set -e
 
 REPO_URL="https://github.com/WiloxDev/discord-pi.git"
-DEFAULT_EXT_DIR="$HOME/.pi/agent/extensions/discord-pi"
 
-echo "🎧 Instalando 'Discord PI Voice Operations' para Gentle-Pi..."
+echo "🎧 Instalando 'Discord PI Voice Operations' (Multiplataforma)..."
 
-# 1. Determinar el directorio de extensiones de Pi
-PI_EXT_BASE="$HOME/.pi/agent/extensions"
+# 1. Determinar dinámicamente el directorio de extensiones de Pi
+PI_EXT_BASE=""
+if [ -n "$PI_AGENT_DIR" ] && [ -d "$PI_AGENT_DIR/extensions" ]; then
+    PI_EXT_BASE="$PI_AGENT_DIR/extensions"
+elif [ -d "$HOME/.pi/agent-wilox/extensions" ]; then
+    PI_EXT_BASE="$HOME/.pi/agent-wilox/extensions"
+elif [ -d "$HOME/.pi/agent/extensions" ]; then
+    PI_EXT_BASE="$HOME/.pi/agent/extensions"
+elif [ -d "$HOME/.pi/extensions" ]; then
+    PI_EXT_BASE="$HOME/.pi/extensions"
+else
+    PI_EXT_BASE="$HOME/.pi/agent/extensions"
+fi
+
 mkdir -p "$PI_EXT_BASE"
+DEFAULT_EXT_DIR="$PI_EXT_BASE/discord-pi"
 
-# 2. Clonar o Actualizar el Repositorio
+# 2. Detección informativa de Discord / Vesktop
+DISCORD_FLAVOR="No detectado en ejecución"
+if pgrep -x "Discord" >/dev/null 2>&1 || pgrep -x "discord" >/dev/null 2>&1; then
+    DISCORD_FLAVOR="Discord Oficial"
+elif pgrep -x "vesktop" >/dev/null 2>&1 || pgrep -f "dev.vencord.Vesktop" >/dev/null 2>&1; then
+    DISCORD_FLAVOR="Vesktop"
+fi
+echo "🔍 Entorno Pi: $PI_EXT_BASE"
+echo "🔍 Cliente Discord: $DISCORD_FLAVOR"
+
+# 3. Clonar o Actualizar el Repositorio
 if [ -d "$DEFAULT_EXT_DIR/.git" ]; then
     echo "🔄 Actualizando versión existente en $DEFAULT_EXT_DIR..."
     git -C "$DEFAULT_EXT_DIR" pull --ff-only

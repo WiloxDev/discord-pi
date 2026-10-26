@@ -7,14 +7,18 @@ Card reactiva e interactiva de Discord Voice para **Pi Agent** y **Gentle-Pi**, 
 ## ✨ Características
 
 - 🎙 **Telemetría de Voz en Tiempo Real**: Visualización de canal activo, bitrate de sala y latencia (ping en ms).
+- 🔄 **Soporte Dinámico Dual (Discord Oficial + Vesktop)**:
+  - Detección automática en runtime del cliente activo: **Discord Desktop Oficial** o **Vesktop** (vía arRPC).
+  - Badge visual en tarjeta: `Discord Voice (Oficial)` o `Discord Voice (Vesktop)`.
 - 🪟 **Soporte Multiplataforma Total (Windows + Linux)**:
-  - **Windows**: Conexión nativa por Named Pipes (`\\.\pipe\discord-ipc-0..9`) y rutas en `%APPDATA%` / `%USERPROFILE%`.
+  - **Windows**: Conexión nativa por Named Pipes estándar y extendidos (`\\.\pipe\discord-ipc-0..9` y `\\?\pipe\discord-ipc-0..9`) y rutas en `%APPDATA%` / `%USERPROFILE%`.
   - **Linux / macOS**: Conexión nativa por UNIX Domain Sockets (`$XDG_RUNTIME_DIR/discord-ipc-0`, Snap, Flatpak) y `$HOME`.
+- 🎯 **Detección Dinámica de Entorno Pi**: Los instaladores reconocen perfiles personalizados (`agent-wilox`, `agent`, o global) configurándose en el entorno activo de Gentle-Pi o Pi nativo.
 - 🟢 **Prioridad de Hablantes**: Detección dinámica de participantes que están hablando en vivo (`🟢`), tu usuario (`Wilson Lavio` o por ID de Discord) y lista alfabética.
-- 🔇 **Control Rápido de Micrófono**: Comandos interactivos `/discord mute` y clic en tarjeta con integración a Discord IPC nativo.
+- 🔇 **Control de Micrófono Inteligente**: Mute bidireccional nativo para Discord Oficial e instrucciones asistidas para Vesktop.
 - 👥 **Contador de Participantes**: Inspección rápida de la cantidad de usuarios presentes en la llamada.
 - 🛡️ **Arquitectura Híbrida a Prueba de Fallos**:
-  1. Conexión IPC local directa si Discord Desktop está activo.
+  1. Conexión IPC local directa si Discord Desktop o Vesktop está activo.
   2. Fallback a archivo de telemetría JSON (`~/.discord-voice-state.json` o `%USERPROFILE%\.discord-voice-state.json`) para daemons/bots.
   3. Estado desconectado elegante cuando Discord está cerrado o sin canal activo.
 

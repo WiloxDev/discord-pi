@@ -4,6 +4,7 @@ import {
   DiscordVoiceChannel,
   DiscordVoiceSelfState,
   DiscordPiConfig,
+  DiscordClientType,
 } from "./types.js";
 
 /**
@@ -40,6 +41,7 @@ export function sortParticipants(participants: DiscordVoiceParticipant[]): Disco
 export function buildDiscordVoiceProjection(
   rawStatus: any,
   config: DiscordPiConfig = {},
+  defaultClientType: DiscordClientType = "unknown",
 ): DiscordVoiceProjection {
   const fallbackUsername = config.defaultUsername || "Wilson Lavio";
 
@@ -47,6 +49,7 @@ export function buildDiscordVoiceProjection(
     return {
       connected: false,
       connectionState: "offline",
+      clientType: "unknown",
       pingMs: null,
       channel: null,
       self: {
@@ -126,10 +129,13 @@ export function buildDiscordVoiceProjection(
   const sortedParticipants = sortParticipants(participants);
   const speakingCount = participants.filter((p) => p.speaking).length;
   const pingMs = typeof rawStatus.ping_ms === "number" ? rawStatus.ping_ms : null;
+  const clientType: DiscordClientType =
+    rawStatus?.client_type || rawStatus?.clientType || defaultClientType || "unknown";
 
   return {
     connected: connectionState === "online",
     connectionState,
+    clientType,
     pingMs,
     channel,
     self,

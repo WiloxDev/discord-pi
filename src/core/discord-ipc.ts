@@ -2,6 +2,7 @@ import * as net from "node:net";
 import * as path from "node:path";
 import * as fs from "node:fs";
 import { EventEmitter } from "node:events";
+import { DiscordClientType } from "./types.js";
 
 export enum IpcOpcode {
   HANDSHAKE = 0,
@@ -66,6 +67,7 @@ export function getIpcCandidatePaths(): string[] {
   if (process.platform === "win32") {
     for (let i = 0; i < maxPipes; i++) {
       candidates.push(`\\\\.\\pipe\\discord-ipc-${i}`);
+      candidates.push(`\\\\?\\pipe\\discord-ipc-${i}`);
     }
     return candidates;
   }
@@ -107,6 +109,7 @@ export class DiscordIpcConnection extends EventEmitter {
   private nonceCounter = 0;
   private pendingCommands = new Map<string, { resolve: (val: any) => void; reject: (err: any) => void }>();
   private currentUser: any = null;
+  private detectedClient: DiscordClientType = "unknown";
 
   constructor(private clientId: string = "1290372891901239328") {
     super();
@@ -114,6 +117,10 @@ export class DiscordIpcConnection extends EventEmitter {
 
   public isConnected(): boolean {
     return this.connected && this.socket !== null && !this.socket.destroyed;
+  }
+
+  public getDetectedClient(): DiscordClientType {
+    return this.detectedClient;
   }
 
   public getCurrentUser(): any {
@@ -205,7 +212,14 @@ export class DiscordIpcConnection extends EventEmitter {
       if (payload.cmd === "DISPATCH") {
         if (payload.evt === "READY") {
           this.currentUser = payload.data?.user || null;
-          this.emit("ready", this.currentUser);
+          const uname = (this.currentUser?.username || "").toLowerCase();
+          const gname = (this.currentUser?.global_name || "").toLowerCase();
+          if (uname === "arrpc" || gname === "arrpc") {
+            this.detectedClient = "vesktop";
+          } else {
+            this.detectedClient = "discord_official";
+          }
+          this.emit("ready", this.currentUser, this.detectedClient);
         } else {
           this.emit("event", payload.evt, payload.data);
         }
@@ -305,6 +319,7 @@ export class DiscordIpcConnection extends EventEmitter {
   public cleanup(): void {
     this.connected = false;
     this.currentUser = null;
+    this.detectedClient = "unknown";
     if (this.socket) {
       this.socket.destroy();
       this.socket = null;

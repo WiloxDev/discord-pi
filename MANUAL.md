@@ -120,7 +120,14 @@ Al abrir una nueva sesión de Pi (`pi`), la extensión se cargará de forma auto
    ```
 3. ¡Listo! La extensión priorizará tu usuario en la cabecera interactiva y asociará el estado de tu micrófono.
 
-### Método B: Puente de Datos (Bots o Daemons Externos)
+### Método B: Compatibilidad con Vesktop (Windows y Linux)
+
+Si utilizas **Vesktop** (cliente ligero basado en Vencord):
+1. Asegúrate de tener habilitada la opción **arRPC** en los Ajustes de Vesktop (viene activada por defecto).
+2. `discord-pi` detectará automáticamente que Vesktop está abierto mediante el handshake `READY` y mostrará la tarjeta como `Discord Voice (Vesktop) [Listo]`.
+3. Dado que arRPC emula la presencia pero no incluye el motor binario de voz C++ de Discord, el control de Mute en Vesktop se realiza mediante tu atajo global de teclado configurado en Vesktop o mediante el archivo puente `.discord-voice-state.json`.
+
+### Método C: Puente de Datos (Bots o Daemons Externos)
 
 Si utilizas un daemon en segundo plano o bot de Discord que monitorea tus canales, este puede volcar el estado en:
 - Linux: `~/.discord-voice-state.json`

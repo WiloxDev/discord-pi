@@ -27,9 +27,13 @@ export interface DiscordVoiceSelfState {
   inputMode: "VOICE_ACTIVITY" | "PUSH_TO_TALK" | string | null;
 }
 
+export type DiscordClientType = "discord_official" | "vesktop" | "unknown";
+export type PiEnvironment = "gentle-pi" | "pi-native" | "unknown";
+
 export interface DiscordVoiceProjection {
   connected: boolean;
   connectionState: "online" | "connecting" | "degraded" | "offline" | "ready";
+  clientType: DiscordClientType;
   pingMs: number | null;
   channel: DiscordVoiceChannel | null;
   self: DiscordVoiceSelfState;

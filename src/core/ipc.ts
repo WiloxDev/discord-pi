@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";
 import { buildDiscordVoiceProjection } from "./projection.js";
-import { DiscordVoiceProjection, DiscordPiConfig } from "./types.js";
+import { DiscordVoiceProjection, DiscordPiConfig, DiscordClientType } from "./types.js";
 import { DiscordIpcConnection } from "./discord-ipc.js";
 
 /**
@@ -94,7 +94,8 @@ export class DiscordClient {
     }
 
     const rawStatus = this.readRawState();
-    const proj = buildDiscordVoiceProjection(rawStatus, this.config);
+    const detectedClient = this.ipc.getDetectedClient();
+    const proj = buildDiscordVoiceProjection(rawStatus, this.config, detectedClient);
 
     if (this.optimisticMute !== null) {
       proj.self.muted = this.optimisticMute;
@@ -125,11 +126,13 @@ export class DiscordClient {
     // Si el socket IPC nativo está conectado, proveer estado listo de Discord Desktop
     if (this.ipc.isConnected()) {
       const user = this.ipc.getCurrentUser();
+      const detected = this.ipc.getDetectedClient();
       return {
         version: 1,
         app_open: true,
         confirmed: true,
         state: "ready",
+        client_type: detected,
         channel: null,
         self: {
           displayName: user?.global_name || user?.username || this.config.defaultUsername,
@@ -152,16 +155,35 @@ export class DiscordClient {
     };
   }
 
-  public async toggleMute(): Promise<boolean> {
+  public async toggleMute(): Promise<{ success: boolean; clientType: DiscordClientType; message?: string }> {
     const proj = this.getProjection();
     const targetMute = !proj.self.muted;
     this.setOptimisticMute(targetMute);
 
+    const clientType = this.ipc.getDetectedClient();
+
     if (this.ipc.isConnected()) {
-      return await this.ipc.setMute(targetMute);
+      if (clientType === "vesktop") {
+        return {
+          success: false,
+          clientType: "vesktop",
+          message: "Vesktop conectado (Mute en Vesktop se gestiona mediante atajo global o puente JSON)",
+        };
+      }
+
+      const ok = await this.ipc.setMute(targetMute);
+      return {
+        success: ok,
+        clientType: "discord_official",
+        message: ok ? "Micrófono alternado en Discord Oficial vía IPC" : "No se pudo cambiar el micrófono por IPC",
+      };
     }
 
-    return false;
+    return {
+      success: false,
+      clientType: "unknown",
+      message: "Micrófono alternado (modo local / simulado)",
+    };
   }
 
   public dispose(): void {
