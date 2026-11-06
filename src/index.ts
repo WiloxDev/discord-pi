@@ -1,6 +1,7 @@
 import { loadConfig } from "./config.js";
 import { DiscordClient } from "./core/ipc.js";
 import { renderDiscordCard } from "./ui/card.js";
+import { mountSidebarRail as composeSidebarRail, type DiscordRail } from "./ui/sidebar-composition.js";
 import { PiEnvironment } from "./core/types.js";
 
 /**
@@ -51,80 +52,28 @@ export default function activate(pi: any) {
     void client.tryConnectIpc();
 
     try {
-      const SIDEBAR_STATE_KEY = Symbol.for("gentle-pi.experimental-sidebar.state");
+      const buildRailComponent = (): DiscordRail => ({
+        render: (railWidth: number) => renderDiscordCard(client.getProjection(), railWidth, config),
+        handleMouse: (evt: any) => {
+          if (evt?.type === "click") {
+            void client.toggleMute().then((res) => {
+              const msg = res.message || "Estado de micrófono alternado";
+              ctx.ui?.notify?.(`🎙 ${msg}`);
+            });
+            return { handled: true };
+          }
+          return undefined;
+        },
+        digest: () => {
+          const proj = client.getProjection();
+          return `${proj.connectionState}_${proj.clientType}_${proj.channel?.name}_${proj.self.muted}_${proj.participants.length}_${client.getIpc().isConnected()}`;
+        },
+        invalidate: () => {},
+        dispose: () => {},
+      });
 
-      // Función para enlazar e inyectar el componente en el sidebar de Gentle-Shell
-      const mountSidebarRail = (terminal: any) => {
-        const terminalState = terminal ? terminal[SIDEBAR_STATE_KEY] : null;
-        if (!terminalState?.parts || typeof terminalState.parts.set !== "function") {
-          return null;
-        }
-
-        const railComponent = {
-          render: (railWidth: number) => {
-            const proj = client.getProjection();
-            return renderDiscordCard(proj, railWidth, config);
-          },
-          handleMouse: (evt: any) => {
-            if (evt?.type === "click") {
-              void client.toggleMute().then((res) => {
-                const msg = res.message || "Estado de micrófono alternado";
-                ctx.ui?.notify?.(`🎙 ${msg}`);
-              });
-              return { handled: true };
-            }
-            return undefined;
-          },
-          digest: () => {
-            const proj = client.getProjection();
-            return `${proj.connectionState}_${proj.clientType}_${proj.channel?.name}_${proj.self.muted}_${proj.participants.length}_${client.getIpc().isConnected()}`;
-          },
-          invalidate: () => {},
-          dispose: () => {},
-        };
-
-        // 1. Registro directo en clave "discord" (para versiones de Gentle-Shell con descubrimiento dinámico)
-        terminalState.parts.set("discord", railComponent);
-
-        // 2. Decorator pattern sobre "footer" (para versiones de Gentle-Shell con filtro estático ["footer", "agents", "todo"])
-        const originalFooter = terminalState.parts.get("footer");
-        if (originalFooter && !(originalFooter as any).__discordAttached) {
-          const decoratedFooter = {
-            __discordAttached: true,
-            render: (width: number) => {
-              const footerLines = originalFooter.render?.(width) ?? [];
-              const discordLines = railComponent.render(width) ?? [];
-              if (discordLines.length === 0) return footerLines;
-              if (footerLines.length === 0) return discordLines;
-              return [...footerLines, "", ...discordLines];
-            },
-            digest: () => {
-              const fDigest = typeof originalFooter.digest === "function" ? originalFooter.digest() : "";
-              return `${fDigest}_discord_${railComponent.digest()}`;
-            },
-            handleMouse: (evt: any) => {
-              // Si el clic impacta en la zona inferior correspondiente a Discord
-              const handledByFooter = originalFooter.handleMouse?.(evt);
-              if (handledByFooter) return handledByFooter;
-              return railComponent.handleMouse(evt);
-            },
-            invalidate: () => {
-              originalFooter.invalidate?.();
-              railComponent.invalidate();
-            },
-            dispose: () => {
-              if (terminalState.parts.get("footer") === decoratedFooter) {
-                terminalState.parts.set("footer", originalFooter);
-              }
-              originalFooter.dispose?.();
-              railComponent.dispose();
-            },
-          };
-          terminalState.parts.set("footer", decoratedFooter);
-        }
-
-        return terminalState;
-      };
+      // Composición y anti-duplicación: ver ui/sidebar-composition.ts (testeable sin cliente).
+      const mountSidebarRail = (terminal: any) => composeSidebarRail(terminal, buildRailComponent());
 
       // Intentar montaje en el terminal actual si ya existe
       if (ctx.ui?.terminal) {
